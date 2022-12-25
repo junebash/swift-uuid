@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "swift-lock",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/junebash/swift-lock",
+      "state" : {
+        "branch" : "main",
+        "revision" : "c74a1f11fc1bc87cdd94b260345bf7b0e2ce09b2"
+      }
+    }
+  ],
+  "version" : 2
+}
