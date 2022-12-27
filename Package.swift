@@ -4,13 +4,6 @@ import PackageDescription
 
 let package = Package(
   name: "swift-uuid",
-  platforms: [
-    .iOS(.v16),
-    .macOS(.v13),
-    .tvOS(.v16),
-    .watchOS(.v9),
-    .macCatalyst(.v16)
-  ],
   products: [
     .library(
       name: "UUID",
@@ -25,13 +18,15 @@ let package = Package(
       name: "UUID",
       dependencies: [
         .product(name: "Lock", package: "swift-lock")
-      ]
+      ],
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warn-concurrency"])]
     ),
     .testTarget(
       name: "UUIDTests",
       dependencies: [
         "UUID"
-      ]
+      ],
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warn-concurrency"])]
     )
   ]
 )

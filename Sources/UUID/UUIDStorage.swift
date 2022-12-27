@@ -1,54 +1,3 @@
-@inlinable
-internal func _uuidCollectionToRawValue<C: Collection>(_ array: C) -> UUID.RawValue
-where C.Element == UInt8, C.Index: ExpressibleByIntegerLiteral {
-  (
-    array[0],
-    array[1],
-    array[2],
-    array[3],
-    array[4],
-    array[5],
-    array[6],
-    array[7],
-    array[8],
-    array[9],
-    array[10],
-    array[11],
-    array[12],
-    array[13],
-    array[14],
-    array[15]
-  )
-}
-
-@inlinable
-internal func _emptyUUIDRawValue() -> UUID.RawValue {
-  (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-}
-
-extension UInt8 {
-  @inlinable
-  internal func _utf8CodeUnitFromNormalizedNibble() -> UInt8 {
-    precondition(self < 16)
-    switch self {
-    case 0...9: return self + 48
-    case 10...15: return self + 55
-    default: fatalError()
-    }
-  }
-}
-
-extension Array where Element == UTF8.CodeUnit {
-  @inlinable
-  mutating func _appendHex(from byte: UInt8) {
-    let first = (0b11110000 & byte) &>> 4
-    let second = 0b00001111 & byte
-
-    self.append(first._utf8CodeUnitFromNormalizedNibble())
-    self.append(second._utf8CodeUnitFromNormalizedNibble())
-  }
-}
-
 @usableFromInline
 internal final class UUIDStorage: Sendable {
   @usableFromInline
@@ -186,88 +135,13 @@ extension UUIDStorage: Collection {
 extension UUIDStorage {
   @inlinable
   var uuidString: String {
-    let first = self[0..<4]
-    let second = self[4..<6]
-    let third = self[6..<8]
-    let fourth = self[8..<10]
-    let fifth = self[10..<16]
-
-    var output = [UTF8.CodeUnit]()
-    output.reserveCapacity(36)
-
-    func appendByte(_ byte: UInt8) {
-      output._appendHex(from: byte)
-    }
-
-    func appendDash() {
-      output.append(45) // "-"
-    }
-
-    for byte in first {
-      appendByte(byte)
-    }
-    appendDash()
-    for byte in second {
-      appendByte(byte)
-    }
-    appendDash()
-    for byte in third {
-      appendByte(byte)
-    }
-    appendDash()
-    for byte in fourth {
-      appendByte(byte)
-    }
-    appendDash()
-    for byte in fifth {
-      appendByte(byte)
-    }
-
-    return String(decoding: output, as: UTF8.self)
+    _uuidString(from: self)
   }
 
   @inlinable
   convenience init?(uuidString: String) {
-    var first: UInt8?
-    var second: UInt8?
-
-    var bytes = [UInt8]()
-    bytes.reserveCapacity(16)
-
-    func assignNormalized(_ nibble: UInt8) {
-      if first == nil {
-        first = nibble
-      } else {
-        second = nibble
-      }
-    }
-
-    for (i, codeUnit) in uuidString.utf8.enumerated() {
-      switch codeUnit {
-      case 45:
-        guard
-          i == 8 || i == 13 || i == 18 || i == 23
-        else { return nil }
-        continue
-      case 48...57: // 0...9
-        assignNormalized(codeUnit - 48)
-      case 65...70: // A...F
-        assignNormalized(codeUnit - 55)
-      case 97...102: // a...f
-        assignNormalized(codeUnit - 87)
-      default:
-        return nil
-      }
-
-      if let a = first, let b = second {
-        let byte = (a << 4) | b
-        bytes.append(byte)
-        first = nil
-        second = nil
-      }
-    }
-
-    self.init(byteArray: bytes)
+    guard let rawValue = _parseUUIDString(uuidString) else { return nil }
+    self.init(rawValue: rawValue)
   }
 }
 

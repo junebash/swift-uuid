@@ -18,7 +18,7 @@ public typealias RawUUID = (
   UInt8
 )
 
-public struct UUID: Sendable, RawRepresentable {
+public struct UUID: Sendable {
   public typealias RawValue = RawUUID
 
   @usableFromInline
@@ -30,9 +30,9 @@ public struct UUID: Sendable, RawRepresentable {
   }
 }
 
-// MARK: - Public
+// MARK: - RawValue
 
-extension UUID {
+extension UUID: RawRepresentable {
   @inlinable
   public var rawValue: RawUUID { storage.rawValue }
 
@@ -103,41 +103,6 @@ extension UUID {
 }
 
 // MARK: - Coding
-
-extension UUID {
-  public enum EncodingStrategy {
-    case uuidString(lowercased: Bool)
-    case custom((UUID, any Encoder) throws -> Void)
-
-    static var uuidString: Self { .uuidString(lowercased: false) }
-  }
-
-  public enum DecodingStrategy {
-    case uuidString
-    case custom((any Decoder) throws -> UUID)
-  }
-}
-
-extension CodingUserInfoKey {
-  public static var uuidEncodingStrategy: CodingUserInfoKey {
-    CodingUserInfoKey(rawValue: "uuidEncodingStrategy")!
-  }
-  public static var uuidDecodingStrategy: CodingUserInfoKey {
-    CodingUserInfoKey(rawValue: "uuidDecodingStrategy")!
-  }
-}
-
-extension Encoder {
-  public var uuidEncodingStrategy: UUID.EncodingStrategy {
-    userInfo[.uuidEncodingStrategy] as? UUID.EncodingStrategy ?? .uuidString(lowercased: false)
-  }
-}
-
-extension Decoder {
-  public var uuidDecodingStrategy: UUID.DecodingStrategy {
-    userInfo[.uuidDecodingStrategy] as? UUID.DecodingStrategy ?? .uuidString
-  }
-}
 
 extension UUID: Encodable {
   public func encode(to encoder: Encoder) throws {
