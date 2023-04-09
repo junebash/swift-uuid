@@ -127,7 +127,10 @@ extension String {
   @usableFromInline
   internal struct EnumeratedUTF8View {
     @usableFromInline
-    var utf8: Substring.UTF8View
+    let utf8: Substring.UTF8View
+
+    @usableFromInline
+    var index: Substring.UTF8View.Index
 
     @usableFromInline
     var offset: Int
@@ -136,13 +139,17 @@ extension String {
     init(utf8: Substring.UTF8View) {
       self.utf8 = utf8
       self.offset = 0
+      self.index = utf8.startIndex
     }
 
     @inlinable
     mutating func popFirst() -> (offset: Int, codeUnit: UInt8)? {
-      guard let codeUnit = utf8.popFirst() else { return nil }
-      defer { offset += 1 }
-      return (offset, codeUnit)
+      guard index < utf8.endIndex else { return nil }
+      defer {
+        utf8.formIndex(after: &index)
+        offset += 1
+      }
+      return (offset, utf8[index])
     }
   }
 }

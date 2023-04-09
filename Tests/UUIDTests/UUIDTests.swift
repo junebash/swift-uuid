@@ -88,8 +88,9 @@ final class UUIDTests: XCTestCase {
 
 @available(macOS 13, *)
 final class UUIDPerformanceTests: XCTestCase {
+  let numberOfGenerations = 100_000
+
   func testRandomPerformance() {
-    let numberOfGenerations = 10_000
     let clock = SuspendingClock()
 
     var foundationUUIDs = [Foundation.UUID]()
@@ -115,7 +116,6 @@ final class UUIDPerformanceTests: XCTestCase {
   }
 
   func testStringPerformance() {
-    let numberOfGenerations = 10_000
     let clock = SuspendingClock()
 
     var foundationUUIDs = [String]()
@@ -142,10 +142,9 @@ final class UUIDPerformanceTests: XCTestCase {
 
   func testInitUUIDStringPerformance() throws {
     let clock = SuspendingClock()
-    let iterationCount = 10_000
 
     let myUUIDTime = try clock.measure {
-      for _ in 1...iterationCount {
+      for _ in 1...numberOfGenerations {
         let uuid = MyUUID()
         let string = uuid.uuidString
         let reUUID = try XCTUnwrap(MyUUID(uuidString: string))
@@ -154,7 +153,7 @@ final class UUIDPerformanceTests: XCTestCase {
     }
 
     let foundationUUIDTime = try clock.measure {
-      for _ in 1...iterationCount {
+      for _ in 1...numberOfGenerations {
         let uuid = Foundation.UUID()
         let string = uuid.uuidString
         let reUUID = try XCTUnwrap(Foundation.UUID(uuidString: string))

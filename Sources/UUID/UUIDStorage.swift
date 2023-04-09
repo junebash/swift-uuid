@@ -1,5 +1,5 @@
 @usableFromInline
-internal final class UUIDStorage: Sendable {
+internal struct UUIDStorage: Sendable {
   @usableFromInline
   let rawValue: RawUUID
 
@@ -9,18 +9,17 @@ internal final class UUIDStorage: Sendable {
   }
 
   @inlinable
-  init(byteArray: [UInt8]) {
-    switch byteArray.count {
+  init<Bytes: Collection<UInt8>>(bytes: Bytes) where Bytes.Index: ExpressibleByIntegerLiteral {
+    switch bytes.count {
     case ..<16:
-      var newValue = byteArray
+      var newValue = Array(bytes)
+      newValue.reserveCapacity(16)
       while newValue.count < 16 {
         newValue.append(0)
       }
       self.rawValue = _uuidCollectionToRawValue(newValue)
-    case 16:
-      self.rawValue = _uuidCollectionToRawValue(byteArray)
     default:
-      self.rawValue = _uuidCollectionToRawValue(byteArray)
+      self.rawValue = _uuidCollectionToRawValue(bytes)
     }
   }
 
@@ -129,9 +128,6 @@ extension UUIDStorage: Collection {
 
 // MARK: - String
 
-// "-" == 45
-// 0—F: 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70
-
 extension UUIDStorage {
   @inlinable
   var uuidString: String {
@@ -139,7 +135,7 @@ extension UUIDStorage {
   }
 
   @inlinable
-  convenience init?(uuidString: String) {
+  init?(uuidString: String) {
     guard let rawValue = _parseUUIDString(uuidString) else { return nil }
     self.init(rawValue: rawValue)
   }

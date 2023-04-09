@@ -43,7 +43,7 @@ extension UUID: RawRepresentable {
 
   @inlinable
   public init<Bytes: Sequence<UInt8>>(bytes: Bytes) {
-    self.init(storage: UUIDStorage(byteArray: Array(bytes)))
+    self.init(storage: UUIDStorage(bytes: Array(bytes)))
   }
 
   public static func empty() -> UUID {
